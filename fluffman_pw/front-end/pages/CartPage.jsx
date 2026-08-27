@@ -6,7 +6,7 @@ import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:3030";
+  const BASE_URL = import.meta.env.VITE_API_URL;
   const { cart, removeFromCart, updateQuantity } = useCart();
 
   const [cartProducts, setCartProducts] = useState([]);

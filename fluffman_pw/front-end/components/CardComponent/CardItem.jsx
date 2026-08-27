@@ -32,12 +32,12 @@ export default function CardItem({ product }) {
     navigate(`/products/${product.slug}`);
   };
 
-  const BASE_URL = "http://localhost:3030";
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   let imageUrl = null;
   if (product?.image_path) {
     let cleanPath = product.image_path.trim();
-    const baseUrlPattern = "http://localhost:3030/api/images/";
+    const baseUrlPattern = `${BASE_URL}/api/images/`;
     if (cleanPath.includes(baseUrlPattern)) {
       const lastIndex = cleanPath.lastIndexOf(baseUrlPattern);
       if (lastIndex > 0) {

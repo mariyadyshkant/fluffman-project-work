@@ -125,7 +125,7 @@ export default function ProductsPage() {
     if (filters.discount) query.append("discount", "1");
     if (filters.price_range) query.append("price_range", filters.price_range);
 
-    fetch(`http://localhost:3030/api/products/search?${query.toString()}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/products/search?${query.toString()}`)
       .then((res) => {
         if (!res.ok) throw new Error("Errore nel caricamento dei prodotti.");
         return res.json();
@@ -151,7 +151,7 @@ export default function ProductsPage() {
   }, [filters]);
 
   useEffect(() => {
-    fetch("http://localhost:3030/api/brands")
+    fetch(`${import.meta.env.VITE_API_URL}/api/brands`)
       .then((res) => res.json())
       .then((data) => setBrands(data))
       .catch((err) => console.error("Errore caricamento brand:", err));

@@ -13,11 +13,11 @@ export default function WishlistPage() {
     async function fetchData() {
       try {
         const productsResponse = await fetch(
-          "http://localhost:3030/api/products"
+          `${import.meta.env.VITE_API_URL}/api/products`
         );
         const productsData = await productsResponse.json();
 
-        const imagesResponse = await fetch("http://localhost:3030/api/images");
+        const imagesResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/images`);
         const imagesData = await imagesResponse.json();
 
         // Prendi solo gli id dalla wishlist del context
@@ -29,7 +29,7 @@ export default function WishlistPage() {
           .map((p) => {
             const img = imagesData.find((i) => i.product_id === p.id);
             const imageUrl = img
-              ? `http://localhost:3030/products_image/${img?.name}`
+              ? `${import.meta.env.VITE_API_URL}/products_image/${img?.name}`
               : "/images/default.jpg";
             return {
               ...p,

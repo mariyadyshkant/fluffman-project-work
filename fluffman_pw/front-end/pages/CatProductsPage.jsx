@@ -28,7 +28,7 @@ export default function CatProductsPage() {
   }, [loading]);
 
   useEffect(() => {
-    fetch("http://localhost:3030/api/products")
+    fetch(`${import.meta.env.VITE_API_URL}/api/products`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Errore nel caricamento dei prodotti.");

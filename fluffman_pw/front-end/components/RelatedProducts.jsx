@@ -40,7 +40,7 @@ export default function RelatedProducts({ productId }) {
                 setIsLoading(true);
 
                 // 1. Esegui la fetch
-                const res = await fetch(`http://localhost:3030/api/products/${productId}/related`);
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${productId}/related`);
 
                 // 2. Controlla se la risposta HTTP è OK (Status 200-299)
                 if (!res.ok) {
@@ -65,7 +65,7 @@ export default function RelatedProducts({ productId }) {
                 const productsWithFullImage = relatedProductsData.map(p => ({
                     ...p,
                     // Utilizza il percorso immagine dal backend per costruire l'URL completo
-                    image: `http://localhost:3030/products_image/${p.image_path}`
+                    image: `${import.meta.env.VITE_API_URL}/products_image/${p.image_path}`
                 }));
 
                 setProducts(productsWithFullImage);

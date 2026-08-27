@@ -29,7 +29,7 @@ export default function Header() {
       return;
     }
 
-    fetch("http://localhost:3030/api/products/search")
+    fetch(`${import.meta.env.VITE_API_URL}/api/products/search`)
       // Logica di gestione degli errori
       .then((res) => {
         if (!res.ok) {

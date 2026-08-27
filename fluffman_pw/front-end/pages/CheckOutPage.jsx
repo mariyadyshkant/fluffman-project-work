@@ -29,8 +29,8 @@ export const PHONE_PATTERN = /^\+39 \d{10}$/;
 export const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
 
 // URLs per i test e la produzione
-const BASE_URL = "http://localhost:3030";
-const SITE_BASE_URL = "http://localhost:3030"; // Cambia questo in "https://www.tuosito.com" in produzione!
+const BASE_URL = import.meta.env.VITE_API_URL;
+const SITE_BASE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
 const SELLER_EMAIL = "seller@example.com";
 
 const CheckoutPage = () => {

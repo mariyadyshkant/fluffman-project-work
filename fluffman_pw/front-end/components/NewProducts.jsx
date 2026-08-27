@@ -16,19 +16,19 @@ export default function NewProducts() {
     async function fetchData() {
       try {
         const resProd = await fetch(
-          `http://localhost:3030/api/products?t=${Date.now()}`
+          `${import.meta.env.VITE_API_URL}/api/products?t=${Date.now()}`
         );
         const products = await resProd.json();
 
         const resImg = await fetch(
-          `http://localhost:3030/api/images?t=${Date.now()}`
+          `${import.meta.env.VITE_API_URL}/api/images?t=${Date.now()}`
         );
         const images = await resImg.json();
 
         const merged = products.map((p) => {
           const img = images.find((i) => i.product_id === p.id);
           const imageUrl = img
-            ? `http://localhost:3030/products_image/${img.name}`
+            ? `${import.meta.env.VITE_API_URL}/products_image/${img.name}`
             : "/images/default.jpg";
           return { ...p, image: imageUrl };
         });

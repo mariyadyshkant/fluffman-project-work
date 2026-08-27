@@ -25,7 +25,7 @@ function SingleProductPage() {
       return;
     }
 
-    fetch(`http://localhost:3030/api/products/${slug}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/products/${slug}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Prodotto non trovato.");
