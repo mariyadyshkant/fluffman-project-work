@@ -111,7 +111,7 @@ export default function CartPage() {
               } else if (cleanPath.startsWith("/api/images/")) {
                 imageUrl = `${BASE_URL}${cleanPath}`;
               } else {
-                imageUrl = `${BASE_URL}/products_image/${cleanPath}`;
+                imageUrl = `${BASE_URL}/api/images/${cleanPath}`;
               }
             }
 

@@ -14,6 +14,9 @@
 
 .max-width-img {
   max-width: 115px;
+  height: 90px;
+  object-fit: contain;
+  border-radius: 0.5rem;
 }
 
 .quantity-container {
