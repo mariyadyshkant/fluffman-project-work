@@ -2,75 +2,67 @@ import "../styles/Tags.css";
 
 export default function Tags({ product }) {
   const animalTypes = {
-    1: "cane",
-    2: "gatto",
-    3: "pesce",
-    4: "roditore",
-    5: "uccello",
+    1: "Cane",
+    2: "Gatto",
+    3: "Pesce",
+    4: "Roditore",
+    5: "Uccello",
   };
 
   return (
-    <div className="mt-5">
+    <div className="mt-2">
       {(product?.animal_id ||
         product?.pet_food_necessity ||
         product?.food_type ||
         product?.age ||
         product?.weight ||
         product?.hair ||
-        product?.product_weight ||
         product?.biological ||
         product?.accessories) && (
           <div className="tags">
-            <ul className="list-unstyled d-flex flex-row gap-4 flex-wrap justify-content-start">
+            <ul className="list-unstyled d-flex flex-row gap-2 flex-wrap justify-content-start mb-0">
               {product?.animal_id && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">
                     {animalTypes[product.animal_id]}
                   </p>
                 </li>
               )}
-              {product?.pet_food_necessity && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">
+              {product?.pet_food_necessity && product.pet_food_necessity !== "0" && (
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">
                     {product.pet_food_necessity}
                   </p>
                 </li>
               )}
-              {product?.food_type && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">{product.food_type}</p>
+              {product?.food_type && product.food_type !== "0" && (
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">{product.food_type}</p>
                 </li>
               )}
               {product?.age && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">{product.age}</p>
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">{product.age}</p>
                 </li>
               )}
               {product?.weight && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">{product.weight}</p>
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">{product.weight}</p>
                 </li>
               )}
-              {product?.hair && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">{product.hair}</p>
+              {product?.hair && product.hair !== "0" && (
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">{product.hair}</p>
                 </li>
               )}
-              {product?.product_weight && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">
-                    {Number(product.product_weight).toFixed(0)} kg
-                  </p>
+              {product?.biological === true && (
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">Bio</p>
                 </li>
               )}
-              {product?.biological === 1 && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">Bio</p>
-                </li>
-              )}
-              {product?.accessories === 1 && (
-                <li className="tag p-2 bg-body-secondary rounded">
-                  <p className="text-success my-1">Accessori</p>
+              {product?.accessories === true && (
+                <li className="tag px-2 py-1 bg-body-secondary rounded">
+                  <p className="text-success my-0 small">Accessori</p>
                 </li>
               )}
             </ul>
