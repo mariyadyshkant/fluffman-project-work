@@ -82,11 +82,11 @@ export default function CardItem({ product }) {
       addToCart(product.id, -1);
     } else {
       removeFromCart(product.id);
-      setShowRemoveToast(true);
-      setTimeout(() => {
-        setShowRemoveToast(false);
-      }, 3000);
     }
+    setShowRemoveToast(true);
+    setTimeout(() => {
+      setShowRemoveToast(false);
+    }, 3000);
   };
 
   // Funzione per gestire la rimozione totale dal carrello
@@ -191,7 +191,7 @@ export default function CardItem({ product }) {
 
       <div className="card-body">
         <h5
-          className="card-title fs-4 product_name"
+          className="card-title product_name"
           onClick={handleCardClick}
           style={{ cursor: "pointer" }}
         >
