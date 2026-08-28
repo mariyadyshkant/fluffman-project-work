@@ -1,14 +1,15 @@
-/* Configurazione per Supabase (PostgreSQL)
+// Configurazione per Supabase (PostgreSQL)
 import pkg from "pg";
+import dotenv from 'dotenv';
 const { Pool } = pkg;
-require('dotenv').config({ path: '../.env' });
+dotenv.config({ path: '../.env' });
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 export default pool;
-*/
 
+/*
 // Configurazione per MySQL
 import mysql from 'mysql2/promise';
 // require('dotenv').config({ path: '../.env' });
@@ -21,3 +22,4 @@ const pool = mysql.createPool({
     database: process.env.DB_DATABASE,
 });
 export default pool;
+*/
