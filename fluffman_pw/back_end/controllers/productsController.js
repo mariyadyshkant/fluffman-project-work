@@ -8,7 +8,7 @@ import {
 // INDEX - Mostra tutti i prodotti
 export async function index(req, res) {
   try {
-    const [rows] = await pool.query(`
+    const { rows } = await pool.query(`
             SELECT
                 p.*,
                 i.name AS image_path
@@ -26,16 +26,16 @@ export async function index(req, res) {
 export async function show(req, res) {
   const { id } = req.params;
   try {
-    const [rows] = await pool.query(
+    const { rows } = await pool.query(
       `
-            SELECT 
+            SELECT
                 p.*,
                 b.name AS brand_name,
                 i.name AS image_path
             FROM products AS p
             JOIN images AS i ON p.id = i.product_id
             JOIN brands AS b ON p.brand_id = b.id
-            WHERE p.id = ?
+            WHERE p.id = $1
         `,
       [id]
     );
@@ -79,8 +79,8 @@ export async function search(req, res) {
   const conditions = [];
 
   if (name) {
-    conditions.push(`p.name LIKE ?`);
     values.push(`%${name}%`);
+    conditions.push(`p.name LIKE $${values.length}`);
   }
   //filtro per DISCOUNT PRICE === 1 == TRUE
   if (req.query.discount === "1") {
@@ -88,23 +88,23 @@ export async function search(req, res) {
   }
 
   if (brand_id) {
-    conditions.push(`p.brand_id = ?`);
     values.push(brand_id);
+    conditions.push(`p.brand_id = $${values.length}`);
   }
 
   if (animal_id) {
-    conditions.push(`p.animal_id = ?`);
     values.push(animal_id);
+    conditions.push(`p.animal_id = $${values.length}`);
   }
 
   if (price_min) {
-    conditions.push(`p.price >= ?`);
     values.push(price_min);
+    conditions.push(`p.price >= $${values.length}`);
   }
 
   if (price_max) {
-    conditions.push(`p.price <= ?`);
     values.push(price_max);
+    conditions.push(`p.price <= $${values.length}`);
   }
 
   if (price_range) {
@@ -152,7 +152,7 @@ export async function search(req, res) {
   query += ` ORDER BY ${order} ${orderDirection}`;
 
   try {
-    const [rows] = await pool.query(query, values);
+    const { rows } = await pool.query(query, values);
     res.json(rows);
   } catch (err) {
     console.error("Errore durante la ricerca:", err);
@@ -169,18 +169,18 @@ export async function getRelatedProducts(req, res) {
 
   try {
     //prodotto principale e attributi per la correlazione
-    const [mainProductRows] = await pool.query(
+    const { rows: mainProductRows } = await pool.query(
       `
-            SELECT 
+            SELECT
             animal_id,
                 brand_id,
-                accessories,   
+                accessories,
                 age,
                 weight,
                 food_type,
                 hair
             FROM products
-            WHERE id = ?
+            WHERE id = $1
         `,
       [id]
     );
@@ -195,25 +195,29 @@ export async function getRelatedProducts(req, res) {
     const { brand_id, animal_id, age, weight, food_type, hair, accessories } = mainProduct;
 
     //query di ricerca con un sistema di punteggio in modo che sia in ordine decrescente
+    // NB: HAVING senza GROUP BY funziona in MySQL come filtro riga per riga, ma non in
+    // Postgres (standard SQL) — qui lo score va quindi calcolato in una subquery e filtrato con WHERE.
     let query = `
-        SELECT
-            p.*,
-            i.name AS image_path,
-            (
-              (p.animal_id = ?) * 10 +         
-              (p.brand_id = ?) * 3 +            
-              (p.accessories = ?) * 2 +         
-              (p.age = ?) * 2 +                
-              (p.weight = ?) * 2 +             
-              (p.food_type = ?) * 1 +         
-                (p.hair = ?) * 1                
-            ) AS score
-        FROM products AS p
-        JOIN images AS i ON p.id = i.product_id
-        WHERE p.id != ? AND p.animal_id = ?  
-        HAVING score > 0                     
-        ORDER BY score DESC, RAND()           
-        LIMIT 20                              
+        SELECT * FROM (
+            SELECT
+                p.*,
+                i.name AS image_path,
+                (
+                  (p.animal_id = $1)::int * 10 +
+                  (p.brand_id = $2)::int * 3 +
+                  (p.accessories = $3)::int * 2 +
+                  (p.age = $4)::int * 2 +
+                  (p.weight = $5)::int * 2 +
+                  (p.food_type = $6)::int * 1 +
+                  (p.hair = $7)::int * 1
+                ) AS score
+            FROM products AS p
+            JOIN images AS i ON p.id = i.product_id
+            WHERE p.id != $8 AND p.animal_id = $9
+        ) AS scored
+        WHERE score > 0
+        ORDER BY score DESC, RANDOM()
+        LIMIT 20
     `;
 
     const values = [
@@ -228,7 +232,7 @@ export async function getRelatedProducts(req, res) {
       animal_id,
     ];
 
-    const [relatedProducts] = await pool.query(query, values);
+    const { rows: relatedProducts } = await pool.query(query, values);
 
     //se la query complessa non trova nulla, prova a cercare solo per brand_id o animal_id con questa query
     if (relatedProducts.length === 0) {
@@ -238,11 +242,11 @@ export async function getRelatedProducts(req, res) {
                 i.name AS image_path
             FROM products AS p
             JOIN images AS i ON p.id = i.product_id
-            WHERE p.id != ? AND (p.brand_id = ? OR p.animal_id = ?)
-            ORDER BY RAND()
+            WHERE p.id != $1 AND (p.brand_id = $2 OR p.animal_id = $3)
+            ORDER BY RANDOM()
             LIMIT 12
         `;
-      const [fallbackProducts] = await pool.query(fallbackQuery, [id, brand_id, animal_id]);
+      const { rows: fallbackProducts } = await pool.query(fallbackQuery, [id, brand_id, animal_id]);
       return res.json(fallbackProducts);
     }
 
@@ -259,16 +263,16 @@ export async function getRelatedProducts(req, res) {
 export async function showBySlug(req, res) {
   const { slug } = req.params;
   try {
-    const [rows] = await pool.query(
+    const { rows } = await pool.query(
       `
-            SELECT 
+            SELECT
                 p.*,
                 b.name AS brand_name,
                 i.name AS image_path
             FROM products AS p
             JOIN images AS i ON p.id = i.product_id
             LEFT JOIN brands AS b ON p.brand_id = b.id
-            WHERE p.slug = ?
+            WHERE p.slug = $1
         `,
       [slug]
     );
@@ -321,8 +325,8 @@ export async function store(req, res) {
   }
 
   try {
-    const [rows] = await pool.query(
-      "INSERT INTO products (animal_id, brand_id, name, description, quantity, price, discount_price, age, weight, accessories, food_type, biological, pet_food_necessity, hair, additional_information, product_weight, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    const { rows: [newProduct] } = await pool.query(
+      "INSERT INTO products (animal_id, brand_id, name, description, quantity, price, discount_price, age, weight, accessories, food_type, biological, pet_food_necessity, hair, additional_information, product_weight, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *",
       [
         animal_id,
         brand_id,
@@ -343,7 +347,7 @@ export async function store(req, res) {
         slug,
       ]
     );
-    res.status(201).json({ id: rows.insertId, ...req.body });
+    res.status(201).json(newProduct);
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }
@@ -355,7 +359,7 @@ export async function changePrice(req, res) {
   const { new_price } = req.body;
 
   try {
-    await pool.query("UPDATE products SET price = ? WHERE id = ?", [
+    await pool.query("UPDATE products SET price = $1 WHERE id = $2", [
       new_price,
       id,
     ]);
@@ -403,7 +407,7 @@ export async function update(req, res) {
 
   try {
     await pool.query(
-      "UPDATE products SET animal_id = ?, brand_id = ?, name = ?, description = ?, quantity = ?, price = ?, discount_price = ?, age = ?, weight = ?, accessories = ?, food_type = ?, biological = ?, pet_food_necessity = ?, hair = ?, additional_information = ?, product_weight = ?, slug = ? WHERE id = ?",
+      "UPDATE products SET animal_id = $1, brand_id = $2, name = $3, description = $4, quantity = $5, price = $6, discount_price = $7, age = $8, weight = $9, accessories = $10, food_type = $11, biological = $12, pet_food_necessity = $13, hair = $14, additional_information = $15, product_weight = $16, slug = $17 WHERE id = $18",
       [
         animal_id,
         brand_id,
@@ -426,7 +430,7 @@ export async function update(req, res) {
       ]
     );
 
-    const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [
+    const { rows } = await pool.query("SELECT * FROM products WHERE id = $1", [
       id,
     ]);
     res.json(rows[0]);
@@ -439,7 +443,7 @@ export async function update(req, res) {
 export async function destroy(req, res) {
   const { id } = req.params;
   try {
-    await pool.query("DELETE FROM products WHERE id = ?", [id]);
+    await pool.query("DELETE FROM products WHERE id = $1", [id]);
     res.status(200).json({ message: "Prodotto eliminato con successo." });
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });

@@ -10,7 +10,7 @@ export async function addToCart(req, res) {
 
     try {
         // Controllo della disponibilità
-        const [product] = await pool.query("SELECT quantity FROM products WHERE id = ?", [productId]);
+        const { rows: product } = await pool.query("SELECT quantity FROM products WHERE id = $1", [productId]);
 
         if (product.length === 0) {
             return res.status(404).json({ error: true, message: "Prodotto non trovato." });

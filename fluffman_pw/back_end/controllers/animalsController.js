@@ -31,8 +31,8 @@ const sanitizeAndValidateNumberField = (value, isRequiredAndPositive = false) =>
 // La funzione INDEX del tuo controller dei prodotti
 export async function index(req, res) {
     try {
-        const [rows] = await pool.query(`
-            SELECT 
+        const { rows } = await pool.query(`
+            SELECT
                 p.*,
                 i.name AS image_name
             FROM products AS p
@@ -49,13 +49,13 @@ export async function index(req, res) {
 export async function show(req, res) {
     const { id } = req.params;
     try {
-        const [rows] = await pool.query(`
-            SELECT 
+        const { rows } = await pool.query(`
+            SELECT
                 p.*,
                 i.name AS image_name
             FROM products AS p
             JOIN images AS i ON p.id = i.product_id
-            WHERE p.id = ?
+            WHERE p.id = $1
         `, [id]);
 
         if (rows.length === 0) {
@@ -71,16 +71,16 @@ export async function showBySlug(req, res) {
     const { slug } = req.params;
 
     try {
-        const [rows] = await pool.query(
+        const { rows } = await pool.query(
             `
-            SELECT 
+            SELECT
                 a.*,
                 b.name AS breed_name,
                 i.name AS image_path
             FROM animals AS a
             LEFT JOIN breeds AS b ON a.breed_id = b.id
             LEFT JOIN images AS i ON a.id = i.animal_id
-            WHERE a.slug = ?
+            WHERE a.slug = $1
             `,
             [slug]
         );
@@ -130,10 +130,10 @@ export async function store(req, res) {
         const finalProductWeight = sanitizeAndValidateNumberField(product_weight);
 
         const query = `INSERT INTO products (
-            name, description, quantity, price, discount_price, age, weight, 
-            accessories, food_type, biological, pet_food_necessity, hair, 
+            name, description, quantity, price, discount_price, age, weight,
+            accessories, food_type, biological, pet_food_necessity, hair,
             additional_information, product_weight, animal_id, brand_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`;
 
         const values = [
             name.trim(),
@@ -154,9 +154,7 @@ export async function store(req, res) {
             brand_id || null
         ];
 
-        const [result] = await pool.query(query, values);
-
-        const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [result.insertId]);
+        const { rows } = await pool.query(query, values);
         res.status(201).json(rows[0]);
     } catch (err) {
         res.status(500).json({ error: true, message: err.message });
@@ -174,17 +172,16 @@ export async function changePrice(req, res) {
     }
 
     try {
-        const [result] = await pool.query("UPDATE products SET price = ? WHERE id = ?", [finalNewPrice, id]);
+        const { rows: [updatedProduct] } = await pool.query("UPDATE products SET price = $1 WHERE id = $2 RETURNING *", [finalNewPrice, id]);
 
-        if (result.affectedRows === 0) {
+        if (!updatedProduct) {
             return res.status(404).json({ error: true, message: "Prodotto non trovato" });
         }
 
-        const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [id]);
         res.status(200).json({
             success: true,
             message: `Prezzo del prodotto ${id} aggiornato con successo`,
-            updatedProduct: rows[0]
+            updatedProduct
         });
     } catch (err) {
         res.status(500).json({ error: true, message: err.message });
@@ -225,11 +222,11 @@ export async function update(req, res) {
         const finalDiscountPrice = sanitizeAndValidateNumberField(discount_price);
         const finalProductWeight = sanitizeAndValidateNumberField(product_weight);
 
-        const query = `UPDATE products SET 
-            name = ?, description = ?, quantity = ?, price = ?, discount_price = ?, age = ?, weight = ?, 
-            accessories = ?, food_type = ?, biological = ?, pet_food_necessity = ?, hair = ?, 
-            additional_information = ?, product_weight = ?, animal_id = ?, brand_id = ?
-            WHERE id = ?`;
+        const query = `UPDATE products SET
+            name = $1, description = $2, quantity = $3, price = $4, discount_price = $5, age = $6, weight = $7,
+            accessories = $8, food_type = $9, biological = $10, pet_food_necessity = $11, hair = $12,
+            additional_information = $13, product_weight = $14, animal_id = $15, brand_id = $16
+            WHERE id = $17 RETURNING *`;
         const values = [
             name.trim(),
             description ? description.trim() : null,
@@ -249,14 +246,13 @@ export async function update(req, res) {
             brand_id || null,
             id
         ];
-        const [result] = await pool.query(query, values);
+        const { rows: [updatedProduct] } = await pool.query(query, values);
 
-        if (result.affectedRows === 0) {
+        if (!updatedProduct) {
             return res.status(404).json({ error: true, message: "Prodotto non trovato" });
         }
 
-        const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [id]);
-        res.json({ success: true, message: "Prodotto aggiornato con successo", product: rows[0] });
+        res.json({ success: true, message: "Prodotto aggiornato con successo", product: updatedProduct });
     } catch (err) {
         res.status(500).json({ error: true, message: err.message });
     }
@@ -272,9 +268,9 @@ export async function destroy(req, res) {
     }
 
     try {
-        const [result] = await pool.query("DELETE FROM products WHERE id = ?", [productId]);
+        const result = await pool.query("DELETE FROM products WHERE id = $1", [productId]);
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: true, message: "Prodotto non trovato" });
         }
 
