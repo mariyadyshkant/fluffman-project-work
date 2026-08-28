@@ -108,7 +108,11 @@ function SingleProductPage() {
             <CardProductDetail
               product={product}
               brand={{ name: product.brand_name }}
-              imagePath={product.image_path}
+              imagePath={
+                product.image_path
+                  ? `${import.meta.env.VITE_API_URL}/api/images/${product.image_path}`
+                  : "/images/default.jpg"
+              }
             />
           </div>
           <div className="col-md-6 d-flex flex-column justify-content-around">
