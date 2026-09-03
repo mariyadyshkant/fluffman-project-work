@@ -41,7 +41,7 @@ export default function ProductsSlider({ title, products }) {
 
     <div className="container">
 
-      <div className="m-2 p-2 ">
+      <div className="product-slider-section p-2 ">
         <h2 className="p-2 text-center">{title}</h2>
 
         {!isMobile ? (

@@ -1,4 +1,5 @@
 import ProductsSlider from "../components/ProductsSlider";
+import Loading from "../components/Loading";
 import { useEffect, useState } from "react";
 import "../styles/ProductPages.css";
 // import { useWishlist } from "../context/WishlistContext";

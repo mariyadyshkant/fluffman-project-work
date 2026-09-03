@@ -53,8 +53,9 @@ export default function DogProductsPage() {
       product.pet_food_necessity && product.pet_food_necessity !== "N/A"
   );
   const accessoryProducts = products.filter(
-    (product) => product.accessories === 1
+    (product) => product.accessories === true
   );
+  const careProducts = products.filter((product) => product.hair);
 
   if (showLoading) {
     return <Loading />;
@@ -85,6 +86,13 @@ export default function DogProductsPage() {
         <ProductsSlider
           title="Giochi, collari, cucce, tutto, ma proprio tutto ciò che serve per il tuo cane"
           products={accessoryProducts}
+        />
+      )}
+      {/* Sezione Cura */}
+      {careProducts.length > 0 && (
+        <ProductsSlider
+          title="Tutto ciò che serve per la cura del tuo cane lo trovi qui"
+          products={careProducts}
         />
       )}
     </div>

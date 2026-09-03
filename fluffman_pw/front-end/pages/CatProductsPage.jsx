@@ -53,8 +53,9 @@ export default function CatProductsPage() {
       product.pet_food_necessity && product.pet_food_necessity !== "N/A"
   );
   const accessoryProducts = products.filter(
-    (product) => product.accessories === 1
+    (product) => product.accessories === true
   );
+  const careProducts = products.filter((product) => product.hair);
 
   if (error) {
     return <div className="text-center mt-5 text-danger">Errore: {error}</div>;
@@ -85,6 +86,13 @@ export default function CatProductsPage() {
         <ProductsSlider
           title="Tiragraffi, lettiere, ciotole, giochi: qui trovi tutto!"
           products={accessoryProducts}
+        />
+      )}
+
+      {careProducts.length > 0 && (
+        <ProductsSlider
+          title="Un gatto bello e in salute, con i nostri prodotti"
+          products={careProducts}
         />
       )}
     </div>
