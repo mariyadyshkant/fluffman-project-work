@@ -47,6 +47,7 @@ const CheckoutPage = () => {
   const [nameError, setNameError] = useState(false);
   const [lastNameError, setLastNameError] = useState(false);
   const [paymentErrors, setPaymentErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   const [formData, setFormData] = useState({
@@ -246,6 +247,8 @@ const CheckoutPage = () => {
   const handleOrder = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return; // evita doppio invio se l'utente clicca più volte
+
     const missing = getMissingFields();
     setMissingFields(missing);
 
@@ -286,6 +289,7 @@ const CheckoutPage = () => {
       return;
     }
     setPaymentErrors({});
+    setIsSubmitting(true);
 
 
     const shippingCost =
@@ -498,6 +502,7 @@ const CheckoutPage = () => {
     } catch (error) {
       console.error("Errore durante l'elaborazione dell'ordine:", error);
       alert(`Si è verificato un errore durante l'ordine: ${error.message}. Riprova più tardi.`);
+      setIsSubmitting(false);
     }
   };
 
@@ -731,6 +736,7 @@ const CheckoutPage = () => {
           setShowDeliveryAddress={setShowDeliveryAddress}
           handleAccordionToggle={handleAccordionToggle}
           isAccordionOpen={isAccordionOpen}
+          isSubmitting={isSubmitting}
           cartProducts={cartProducts}
           missingFields={missingFields}
           totalPrice={totalPrice} />

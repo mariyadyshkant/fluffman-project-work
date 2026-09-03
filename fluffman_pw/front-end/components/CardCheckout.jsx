@@ -1,4 +1,4 @@
-export default function CardCheckout({ handleOrder, formData, handleDirectInputChange, handleInputChange, showFieldErrors, emailError, phoneError, paymentErrors, showDeliveryAddress, setShowDeliveryAddress, handleAccordionToggle, isAccordionOpen, cartProducts, missingFields, totalPrice }) {
+export default function CardCheckout({ handleOrder, formData, handleDirectInputChange, handleInputChange, showFieldErrors, emailError, phoneError, paymentErrors, showDeliveryAddress, setShowDeliveryAddress, handleAccordionToggle, isAccordionOpen, isSubmitting, cartProducts, missingFields, totalPrice }) {
     return (
         <div className="card card-checkout">
             <div className="form-section">
@@ -349,13 +349,37 @@ export default function CardCheckout({ handleOrder, formData, handleDirectInputC
                             <button
                                 type="submit"
                                 className="btn-submit"
+                                disabled={isSubmitting}
                                 style={{
-                                    backgroundColor: missingFields.length > 0 ? '#9ca3af' : '#10b981',
-                                    cursor: 'pointer',
+                                    backgroundColor: isSubmitting
+                                        ? '#6b7280'
+                                        : missingFields.length > 0 ? '#9ca3af' : '#10b981',
+                                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.6rem',
                                 }}
                             >
-                                Ordina e Paga
+                                {isSubmitting && (
+                                    <span
+                                        aria-hidden="true"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                            border: '2px solid rgba(255,255,255,0.4)',
+                                            borderTopColor: '#fff',
+                                            borderRadius: '50%',
+                                            display: 'inline-block',
+                                            animation: 'spin-btn 0.7s linear infinite',
+                                        }}
+                                    />
+                                )}
+                                {isSubmitting ? 'Stiamo elaborando il tuo ordine…' : 'Ordina e Paga'}
                             </button>
+                            <style>{`
+                                @keyframes spin-btn { to { transform: rotate(360deg); } }
+                            `}</style>
                         </div>
                     )}
                 </form>
