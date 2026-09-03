@@ -429,26 +429,29 @@ const CheckoutPage = () => {
         }
     `;
 
-      await Promise.all([
-        fetch(`${BASE_URL}/api/send-email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: formData.email,
-            subject: `Conferma del tuo Ordine #${orderNumber}`,
-            body: emailBodyBuyer,
-          }),
+      // Le email di conferma sono "fire and forget": l'ordine è già stato
+      // salvato con successo, quindi non blocchiamo l'utente in attesa che
+      // Gmail risponda (può essere lento, specie dopo un cold start del
+      // backend). Un eventuale errore di invio viene solo loggato.
+      fetch(`${BASE_URL}/api/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: formData.email,
+          subject: `Conferma del tuo Ordine #${orderNumber}`,
+          body: emailBodyBuyer,
         }),
-        fetch(`${BASE_URL}/api/send-email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: SELLER_EMAIL,
-            subject: `Nuovo Ordine #${orderNumber} da ${formData.name} ${formData.lastName}`,
-            body: emailBodySeller,
-          }),
+      }).catch((err) => console.error("Invio email cliente fallito:", err));
+
+      fetch(`${BASE_URL}/api/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: SELLER_EMAIL,
+          subject: `Nuovo Ordine #${orderNumber} da ${formData.name} ${formData.lastName}`,
+          body: emailBodySeller,
         }),
-      ]);
+      }).catch((err) => console.error("Invio email venditore fallito:", err));
 
       // Svuota il carrello usando la funzione corretta dal Context
       clearCart();
